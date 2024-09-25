@@ -1,6 +1,7 @@
 from typing import List, Dict, Optional
 from label_studio_ml.model import LabelStudioMLBase
 from label_studio_ml.response import ModelResponse
+from ultralytics import YOLO 
 
 
 class NewModel(LabelStudioMLBase):
@@ -11,6 +12,10 @@ class NewModel(LabelStudioMLBase):
         """Configure any parameters of your model here
         """
         self.set("model_version", "0.0.1")
+        self.model = YOLO("weights/best.pt")  # load pretrained model
+
+
+
 
     def predict(self, tasks: List[Dict], context: Optional[Dict] = None, **kwargs) -> ModelResponse:
         """ Write your inference logic here
@@ -20,6 +25,18 @@ class NewModel(LabelStudioMLBase):
                 ModelResponse(predictions=predictions) with
                 predictions: [Predictions array in JSON format](https://labelstud.io/guide/export.html#Label-Studio-JSON-format-of-annotated-tasks)
         """
+
+
+        for task in tasks:
+            print(task, task['data']['image'])
+            local_path = get_local_path(task['data']['image'], task_id=task['id'])
+
+            results = model.predict(local_path)
+
+            for i, result in enumerate(results):
+                print(result)
+
+
         print(f'''\
         Run prediction on {tasks}
         Received context: {context}
